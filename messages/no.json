@@ -1,0 +1,185 @@
+{
+  "common": {
+    "signIn": "Logg inn",
+    "signOut": "Logg ut",
+    "save": "Lagre",
+    "saved": "Lagret",
+    "open": "Åpne",
+    "search": "Søk",
+    "loading": "Laster...",
+    "or": "eller",
+    "noWebsite": "Ingen nettside",
+    "pitch": "Pitch",
+    "loadMore": "Last inn flere resultater",
+    "loadingMore": "Laster flere..."
+  },
+  "home": {
+    "heroTitle": "Vi koder, du",
+    "heroHighlight": "casher.",
+    "heroSubtitle": "Beskriv kundens bedrift. AI genererer en profesjonell nettside. Du closer dealen.",
+    "searchPlaceholder": "Et moderne bakeri i Oslo med nettbestilling...",
+    "filters": {
+      "restaurant": "Restaurant",
+      "hairdresser": "Frisør",
+      "dentist": "Tannlege",
+      "plumber": "Rørlegger",
+      "electrician": "Elektriker",
+      "gym": "Treningssenter",
+      "cafe": "Café"
+    },
+    "sidebar": {
+      "previousProjects": "Tidligere prosjekter",
+      "savedProspects": "Lagrede prospekter",
+      "activeProjects": "Pågående prosjekter",
+      "archivedProjects": "Arkiverte prosjekter"
+    },
+    "emptyStates": {
+      "noWebsites": "Ingen nettsider generert ennå",
+      "noWebsitesSub": "Søk etter bedrifter og generer en nettside for å komme i gang",
+      "noProspects": "Ingen lagrede prospekter",
+      "noProspectsSub": "Søk etter bedrifter for å finne nye kunder å kontakte",
+      "noActive": "Ingen pågående prosjekter",
+      "noActiveSub": "Marker et prospekt som kontaktet for å flytte det hit",
+      "noArchived": "Ingen arkiverte prosjekter",
+      "noArchivedSub": "Arkiver prosjekter du er ferdig med for å rydde opp"
+    },
+    "modal": {
+      "title": "Prospekt-resultater",
+      "showingResults": "Viser resultater for",
+      "searching": "Søker etter prospekter på nettet...",
+      "errorTryAgain": "Prøv et annet søk eller prøv igjen senere.",
+      "noResults": "Ingen resultater funnet",
+      "adjustSearch": "Prøv å justere søkeordene dine"
+    },
+    "redirecting": {
+      "title": "Planlegger prosjekt...",
+      "subtitle": "Gjør klar verktøyene og AI-modellene"
+    },
+    "actions": {
+      "archive": "Arkiver",
+      "restore": "Gjenopprett",
+      "contacted": "Kontaktet",
+      "generateWebsite": "Generer nettside",
+      "backToLeads": "Tilbake til leads",
+      "call": "Ring"
+    },
+    "status": {
+      "live": "Live",
+      "inProgress": "Pågår",
+      "archived": "Arkivert",
+      "draft": "Utkast"
+    }
+  },
+  "builder": {
+    "steps": {
+      "fetchingData": "Henter bedriftsdata fra Google...",
+      "generatingLogo": "Genererer logo...",
+      "analyzingReviews": "Analyserer kundeanmeldelser...",
+      "settingUp": "Setter opp Next.js-prosjekt...",
+      "designingPages": "Designer sider med AI...",
+      "preparingPreview": "Klargjør live forhåndsvisning..."
+    },
+    "templates": {
+      "corporateClean": "Profesjonell hero med statistikk-seksjon, klient-logoer og tjenestekort",
+      "boldDark": "Mørkt tema med neon-aksentfarger, store tall og kraftig typografi",
+      "warmOrganic": "Varme jordtoner, avrundede former og naturlig, innbydende følelse",
+      "glassModern": "Glassmorphism-kort, gradient-bakgrunner og futuristisk layout",
+      "editorial": "Magasin-inspirert med store bilder, asymmetrisk grid og serif-fonter",
+      "startupEnergy": "Grønn energi-vibe med statistikk-badges, testimonials og feature-grid",
+      "restaurant": "Meny-fokusert med matbilder-stil, åpningstider og bestillings-CTA",
+      "salon": "Stilrent med booking-fokus, prisliste og galleri-seksjon",
+      "salonName": "Frisør & Salong",
+      "tradesperson": "Tillitvekkende med prosjekt-galleri, sertifiseringer og kontaktskjema",
+      "tradespersonName": "Håndverker",
+      "clinic": "Rent medisinsk design med tjenesteliste, team-seksjon og timebestilling",
+      "clinicName": "Klinikk & Helse"
+    },
+    "references": {
+      "pasteUrl": "Lim inn en URL for å komme i gang",
+      "aiAnalyze": "AI-en vil analysere designet og bruke det som inspirasjon",
+      "generateWithRefs": "Generer med referanser"
+    },
+    "warning": {
+      "title": "Tips før du genererer",
+      "body1": "Er du sikker du vil generere nettside? Ikke alle bedrifter sier ja, og dette kan bli dyrt for deg.",
+      "body2": "Jeg anbefaler heller å ringe og prøve å avtale at du lager en gratis demonstrasjonsnettside for dem, og genererer etter du har fått et ja. Deretter selg nettsiden.",
+      "callFirst": "Ring først",
+      "generateAnyway": "Generer likevel"
+    },
+    "preview": {
+      "projectEstimate": "Prosjektestimat",
+      "calculateValue": "Kalkuler verdi for kunden",
+      "totalEstimatedValue": "Total anslått verdi",
+      "valueDescription": "Hvilken verdi nettsiden og funksjonene vil bringe bedriften per år.",
+      "recommendedIntegrations": "Anbefalte integrasjoner",
+      "upsell": "Upsell",
+      "editSections": "Rediger seksjoner",
+      "changePalette": "Bytt fargepalett",
+      "downloadHtml": "Last ned HTML",
+      "regenerate": "Regenerer",
+      "saveWebsite": "Lagre nettside",
+      "signUpToSave": "Registrer deg for å lagre",
+      "saved": "Lagret!",
+      "next": "Neste",
+      "buildingWebsite": "Bygger nettside...",
+      "regenerating": "Regenererer",
+      "desktop": "Desktop",
+      "tablet": "Nettbrett",
+      "mobile": "Mobil"
+    }
+  },
+  "pitch": {
+    "callBusiness": "Ring bedriften",
+    "callNow": "Ring nå",
+    "helpAndGuidance": "Hjelp & veiledning",
+    "phoneUnavailable": "Telefonnummer ikke tilgjengelig for denne bedriften.",
+    "generatingHelp": "Genererer salgshjelp med AI...",
+    "generationError": "Feil ved generering",
+    "tryAgain": "Prøv igjen",
+    "salesPitch": "Salgspitch",
+    "copy": "Kopier",
+    "conversationTips": "Tips for samtalen",
+    "orSendEmail": "eller send e-post",
+    "sendEmail": "Send e-post",
+    "subject": "Emne",
+    "content": "Innhold",
+    "copyAll": "Kopier alt",
+    "openEmailClient": "Åpne e-postklient",
+    "generateSalesText": "Generer salgstekst",
+    "emailPrompt": "Klikk \"Hjelp & veiledning\" ovenfor for å generere en e-posttekst med AI.",
+    "unknownBusiness": "Ukjent bedrift",
+    "couldNotGenerate": "Kunne ikke generere pitch",
+    "somethingWentWrong": "Noe gikk galt"
+  },
+  "auth": {
+    "login": {
+      "title": "Velkommen tilbake",
+      "subtitle": "Logg inn på kontoen din",
+      "continueWithGoogle": "Fortsett med Google",
+      "email": "E-post",
+      "password": "Passord",
+      "passwordPlaceholder": "Ditt passord",
+      "submit": "Logg inn",
+      "submitting": "Logger inn...",
+      "noAccount": "Har du ikke en konto?",
+      "register": "Registrer deg",
+      "invalidCredentials": "Ugyldig e-post eller passord"
+    },
+    "register": {
+      "title": "Opprett en konto",
+      "subtitle": "Kom i gang med Scaffi",
+      "continueWithGoogle": "Fortsett med Google",
+      "name": "Navn",
+      "namePlaceholder": "Ola Nordmann",
+      "email": "E-post",
+      "password": "Passord",
+      "passwordPlaceholder": "Min. 8 tegn",
+      "submit": "Opprett konto",
+      "submitting": "Oppretter konto...",
+      "hasAccount": "Har du allerede en konto?",
+      "signIn": "Logg inn",
+      "accountCreatedSignInFailed": "Konto opprettet, men innlogging feilet. Vennligst logg inn.",
+      "somethingWentWrong": "Noe gikk galt"
+    }
+  }
+}

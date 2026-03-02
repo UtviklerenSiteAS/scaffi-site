@@ -1,0 +1,173 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Enums ───────────────────────────────────────────────────────────────────
+
+enum ProjectStatus {
+  ACTIVE
+  COMPLETED
+  ARCHIVED
+}
+
+enum ProspectStatus {
+  LEAD
+  QUALIFIED
+  PROPOSAL
+  WON
+  LOST
+}
+
+enum WebsiteStatus {
+  PLANNING
+  IN_PROGRESS
+  LIVE
+  ARCHIVED
+}
+
+enum DeploymentStatus {
+  NONE
+  DEPLOYING
+  DEPLOYED
+  FAILED
+}
+
+enum DomainStatus {
+  CHECKING
+  AVAILABLE
+  PURCHASED
+  DNS_PENDING
+  ACTIVE
+  EXPIRED
+  FAILED
+}
+
+// ─── Models ──────────────────────────────────────────────────────────────────
+
+model User {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  name           String?
+  image          String?
+  hashedPassword String?
+  emailVerified  DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  projects  Project[]
+  prospects Prospect[]
+  websites  Website[]
+  domains   Domain[]
+
+  @@map("users")
+}
+
+model Project {
+  id          String        @id @default(cuid())
+  name        String
+  description String?
+  status      ProjectStatus @default(ACTIVE)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  prospects Prospect[]
+  websites  Website[]
+
+  @@map("projects")
+}
+
+model Prospect {
+  id        String         @id @default(cuid())
+  placeId   String?
+  name      String
+  email     String?
+  phone     String?
+  company   String?
+  website   String?
+  address   String?
+  rating    Float?
+  isAutoSaved Boolean      @default(false)
+  status    ProspectStatus @default(LEAD)
+  notes     String?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  websites Website[]
+
+  @@unique([userId, placeId])
+  @@map("prospects")
+}
+
+model Website {
+  id          String        @id @default(cuid())
+  name        String
+  url         String?
+  htmlContent String?
+  status      WebsiteStatus @default(PLANNING)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  businessName     String?
+  businessAddress  String?
+  businessPhone    String?
+  businessRating   Float?
+  businessCategory String?
+  businessHours    String?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  prospectId String?
+  prospect   Prospect? @relation(fields: [prospectId], references: [id], onDelete: SetNull)
+
+  // Deployment fields
+  deploymentUrl    String?
+  deploymentId     String?
+  vercelProjectId  String?
+  customDomain     String?
+  deploymentStatus DeploymentStatus @default(NONE)
+  publishedAt      DateTime?
+
+  domain Domain?
+
+  @@map("websites")
+}
+
+model Domain {
+  id            String       @id @default(cuid())
+  name          String       @unique
+  status        DomainStatus @default(CHECKING)
+  registrarId   String?
+  purchasePrice Float?
+  expiresAt     DateTime?
+  dnsConfigured Boolean      @default(false)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  websiteId String?  @unique
+  website   Website? @relation(fields: [websiteId], references: [id], onDelete: SetNull)
+
+  @@map("domains")
+}

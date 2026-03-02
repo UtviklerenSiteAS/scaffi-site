@@ -1,0 +1,185 @@
+{
+  "common": {
+    "signIn": "Sign in",
+    "signOut": "Sign out",
+    "save": "Save",
+    "saved": "Saved",
+    "open": "Open",
+    "search": "Search",
+    "loading": "Loading...",
+    "or": "or",
+    "noWebsite": "No website",
+    "pitch": "Pitch",
+    "loadMore": "Load more results",
+    "loadingMore": "Loading more..."
+  },
+  "home": {
+    "heroTitle": "We code, you",
+    "heroHighlight": "cash in.",
+    "heroSubtitle": "Describe your client's business. AI generates a stunning website. You close the deal.",
+    "searchPlaceholder": "A modern bakery in Oslo with online ordering...",
+    "filters": {
+      "restaurant": "Restaurant",
+      "hairdresser": "Hairdresser",
+      "dentist": "Dentist",
+      "plumber": "Plumber",
+      "electrician": "Electrician",
+      "gym": "Gym",
+      "cafe": "Café"
+    },
+    "sidebar": {
+      "previousProjects": "Previous projects",
+      "savedProspects": "Saved prospects",
+      "activeProjects": "Active projects",
+      "archivedProjects": "Archived projects"
+    },
+    "emptyStates": {
+      "noWebsites": "No websites generated yet",
+      "noWebsitesSub": "Search for businesses and generate a website to get started",
+      "noProspects": "No saved prospects",
+      "noProspectsSub": "Search for businesses to find new customers to contact",
+      "noActive": "No active projects",
+      "noActiveSub": "Mark a prospect as contacted to move it here",
+      "noArchived": "No archived projects",
+      "noArchivedSub": "Archive projects you're done with to clean up"
+    },
+    "modal": {
+      "title": "Prospect Results",
+      "showingResults": "Showing results for",
+      "searching": "Scouring the web for prospects...",
+      "errorTryAgain": "Please try a different search or try again later.",
+      "noResults": "No results found",
+      "adjustSearch": "Try adjusting your search terms"
+    },
+    "redirecting": {
+      "title": "Planning project...",
+      "subtitle": "Preparing tools and AI models"
+    },
+    "actions": {
+      "archive": "Archive",
+      "restore": "Restore",
+      "contacted": "Contacted",
+      "generateWebsite": "Generate website",
+      "backToLeads": "Back to leads",
+      "call": "Call"
+    },
+    "status": {
+      "live": "Live",
+      "inProgress": "In progress",
+      "archived": "Archived",
+      "draft": "Draft"
+    }
+  },
+  "builder": {
+    "steps": {
+      "fetchingData": "Fetching business data from Google...",
+      "generatingLogo": "Generating logo...",
+      "analyzingReviews": "Analyzing customer reviews...",
+      "settingUp": "Setting up Next.js project...",
+      "designingPages": "Designing pages with AI...",
+      "preparingPreview": "Preparing live preview..."
+    },
+    "templates": {
+      "corporateClean": "Professional hero with stats section, client logos and service cards",
+      "boldDark": "Dark theme with neon accent colors, large numbers and powerful typography",
+      "warmOrganic": "Warm earth tones, rounded shapes and a natural, inviting feel",
+      "glassModern": "Glassmorphism cards, gradient backgrounds and futuristic layout",
+      "editorial": "Magazine-inspired with large images, asymmetric grid and serif fonts",
+      "startupEnergy": "Green energy vibe with stats badges, testimonials and feature grid",
+      "restaurant": "Menu-focused with food image styling, opening hours and order CTA",
+      "salon": "Sleek with booking focus, price list and gallery section",
+      "salonName": "Hair & Salon",
+      "tradesperson": "Trust-building with project gallery, certifications and contact form",
+      "tradespersonName": "Tradesperson",
+      "clinic": "Clean medical design with service list, team section and appointment booking",
+      "clinicName": "Clinic & Health"
+    },
+    "references": {
+      "pasteUrl": "Paste a URL to get started",
+      "aiAnalyze": "AI will analyze the design and use it as inspiration",
+      "generateWithRefs": "Generate with references"
+    },
+    "warning": {
+      "title": "Tips before you generate",
+      "body1": "Are you sure you want to generate a website? Not all businesses say yes, and this can get expensive.",
+      "body2": "I recommend calling first and trying to arrange making a free demo website for them, then generate after you get a yes. Then sell the website.",
+      "callFirst": "Call first",
+      "generateAnyway": "Generate anyway"
+    },
+    "preview": {
+      "projectEstimate": "Project Estimate",
+      "calculateValue": "Calculate value for the client",
+      "totalEstimatedValue": "Total estimated value",
+      "valueDescription": "The value the website and features will bring the business per year.",
+      "recommendedIntegrations": "Recommended integrations",
+      "upsell": "Upsell",
+      "editSections": "Edit sections",
+      "changePalette": "Change color palette",
+      "downloadHtml": "Download HTML",
+      "regenerate": "Regenerate",
+      "saveWebsite": "Save Website",
+      "signUpToSave": "Sign up to Save",
+      "saved": "Saved!",
+      "next": "Next",
+      "buildingWebsite": "Building website...",
+      "regenerating": "Regenerating",
+      "desktop": "Desktop",
+      "tablet": "Tablet",
+      "mobile": "Mobile"
+    }
+  },
+  "pitch": {
+    "callBusiness": "Call the business",
+    "callNow": "Call now",
+    "helpAndGuidance": "Help & guidance",
+    "phoneUnavailable": "Phone number not available for this business.",
+    "generatingHelp": "Generating sales help with AI...",
+    "generationError": "Error generating",
+    "tryAgain": "Try again",
+    "salesPitch": "Sales pitch",
+    "copy": "Copy",
+    "conversationTips": "Conversation tips",
+    "orSendEmail": "or send email",
+    "sendEmail": "Send email",
+    "subject": "Subject",
+    "content": "Content",
+    "copyAll": "Copy all",
+    "openEmailClient": "Open email client",
+    "generateSalesText": "Generate sales text",
+    "emailPrompt": "Click \"Help & guidance\" above to generate an email text with AI.",
+    "unknownBusiness": "Unknown business",
+    "couldNotGenerate": "Could not generate pitch",
+    "somethingWentWrong": "Something went wrong"
+  },
+  "auth": {
+    "login": {
+      "title": "Welcome back",
+      "subtitle": "Sign in to your account",
+      "continueWithGoogle": "Continue with Google",
+      "email": "Email",
+      "password": "Password",
+      "passwordPlaceholder": "Your password",
+      "submit": "Sign in",
+      "submitting": "Signing in...",
+      "noAccount": "Don't have an account?",
+      "register": "Register",
+      "invalidCredentials": "Invalid email or password"
+    },
+    "register": {
+      "title": "Create an account",
+      "subtitle": "Get started with Scaffi",
+      "continueWithGoogle": "Continue with Google",
+      "name": "Name",
+      "namePlaceholder": "John Doe",
+      "email": "Email",
+      "password": "Password",
+      "passwordPlaceholder": "Min. 8 characters",
+      "submit": "Create account",
+      "submitting": "Creating account...",
+      "hasAccount": "Already have an account?",
+      "signIn": "Sign in",
+      "accountCreatedSignInFailed": "Account created but sign-in failed. Please log in.",
+      "somethingWentWrong": "Something went wrong"
+    }
+  }
+}

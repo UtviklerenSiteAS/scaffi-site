@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install @prisma/client)",
+      "Bash(npm install -D prisma)",
+      "Bash(npm install @prisma/adapter-neon @neondatabase/serverless)",
+      "Bash(npx prisma generate)",
+      "Bash(npx prisma migrate dev --name init)",
+      "WebFetch(domain:www.prisma.io)",
+      "Bash(npx shadcn@latest add @magicui/line-shadow-text)",
+      "Bash(npx shadcn@latest init)",
+      "Bash(npx shadcn@latest add @magicui/interactive-grid-pattern)",
+      "Bash(npm install next-auth@5 @auth/prisma-adapter react-hook-form zod @hookform/resolvers bcryptjs)",
+      "Bash(npm install -D @types/bcryptjs)",
+      "Bash(npm view next-auth versions --json)",
+      "Bash(npm install next-auth@beta @auth/prisma-adapter react-hook-form zod @hookform/resolvers bcryptjs)",
+      "Bash(npx prisma migrate dev --name add-auth-fields)",
+      "Bash(node -e \"console.log\\(require\\(''crypto''\\).randomBytes\\(32\\).toString\\(''hex''\\)\\)\")",
+      "Bash(npx next build)",
+      "Bash(ls /c/ai-agency-os/app/\\\\\\(dashboard\\\\\\)/)",
+      "Bash(npx tsc --noEmit)"
+    ]
+  }
+}

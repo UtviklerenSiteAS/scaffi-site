@@ -1,0 +1,131 @@
+# 🏆 Plan: Bli den beste AI-nettside-generatoren
+
+## Mål
+Generere nettsider som ser ut som de er laget av et profesjonelt designbyrå — ikke av en AI.
+
+---
+
+## 🎨 Visuelle AI-elementer
+
+### 1. AI-generert Logo (Nano Banana Pro / Gemini)
+- Bruk Gemini Imagen API for å generere en ekte logo basert på bedriftsnavn og kategori
+- Formater: SVG + PNG, begge varianter (lys/mørk bakgrunn)
+- Implementasjon: Kall Imagen API i [generate/route.ts](file:///c:/ai-agency-os/app/api/websites/generate/route.ts), embed base64 `<img>` direkte i HTML-en
+
+### 2. AI-genererte Ikoner
+- Generer custom SVG-ikoner for hvert "Service"-punkt i stedet for generiske ikoner
+- Alternativt: Bruk Google Material Symbols eller Lucide og velg de som passer bransjekonteksten automatisk via et LLM-kall
+
+### 3. AI-generert Herobildet / Bakgrunnsgrafikk
+- Bruk Imagen / Stability AI for å generere et skreddersydd herobildet
+- Prompt: `A photorealistic {category} business in Norway, editorial style`
+- Lagre som base64 og embed i HTML
+
+### 4. Favicon-generering
+- Generer et eget ikon fra logoen via canvas-manipulering
+- Embed som `<link rel="icon" href="data:image/png;base64,...">` i HTML-headeren
+
+---
+
+## 🔬 Bedre Referanseanalyse
+
+### 5. Full CSS-variabel-analyse
+- Trekk ut CSS custom properties (`--primary-color`, `--font-heading`) for en komplett designtoken-liste
+- Spesielt viktig for moderne nettsider som bruker design systems
+
+### 6. Font-varianter henter
+- Hent `@font-face`-deklarasjoner og Google Fonts-lenker for å sende den **eksakte** fontfilen til AI
+- Matcher vekt (bold, thin), stil (italic/normal) og størrelsesskala
+
+### 7. Spacing Scale Extraction
+- Finn alle `margin`/`padding`/`gap`-verdier og bygg en "spacing-skala", f.eks. 4-8-16-32px grid
+- AI bruker denne skalaen når den lager seksjoner
+
+---
+
+## 🧠 Smarter Business Intelligence
+
+### 8. Automatisk Google Reviews Sentiment-analyse
+- Analyser de 5 beste anmeldelsene med Claude
+- Trekk ut: hva kunder elsker, populære produkter/tjenester, unike USPs
+- Bruk som "About"-tekst i stedet for generiske formuleringer
+
+### 9. Bransje-spesifikke seksjoner
+- **Restaurant:** Meny-seksjon med priser + "Bordreservering" CTA
+- **Frisør:** Tjenestekort med pris + "Bestill time" knapp
+- **Tannlege:** Behandlinger + forsikringstekst
+- **Elektriker/Rørlegger:** Nødhjelp-banner øverst, sertifiseringer, tjenestekart
+
+### 10. Automatisk konkurrent-differensiering
+- Søk etter nærliggende konkurrenter via Places API
+- Analyser hva bedriften gjør bedre (rating, antall anmeldelser, pris) og fremhev dette i teksten
+
+---
+
+## ✨ Teknisk Kvalitet
+
+### 11. CSS Custom Properties / Design Token System
+- All-generert CSS bruker variabler (`--color-primary`, `--radius-card`)
+- Gjør det enklere å "theme-switche" om kunden ønsker endringer
+
+### 12. Mikro-animasjoner, injisert automatisk
+- Legg til [Intersection Observer](https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API)-basert scroll-animasjon på alle seksjoner
+- "Fade in from bottom" på kort, "scale up" på ikoner
+
+### 13. Schema.org JSON-LD SEO Markup
+- Inject `<script type="application/ld+json">` med `LocalBusiness`-schema
+- Inkluder: navn, adresse, telefon, åpningstider, rating, kategori
+- Gir umiddelbar SEO-verdi for kunden
+
+### 14. Performance-optimalisert output
+- Lazy-load alle bilder (`loading="lazy"`)
+- Kritisk CSS i `<head>`, resten deferred
+- Ingen ubrukte CSS-regler
+
+---
+
+## 🛠️ Brukeropplevelse i Appen
+
+### 15. Live Streaming av HTML
+- Stream AI-responsen i sanntid med `text/event-stream` slik at brukeren ser nettsiden bygge seg opp live
+- Dramatisk bedre opplevelse enn å vente 15 sekunder
+
+### 16. Seksjon-for-seksjon Regenerering
+- I preview-skjermen: hover over en seksjon og klikk "✏️ Regenerate this section"
+- Sender bare den seksjonen til AI og swapper den inn i HTML-en
+
+### 17. Fargepalett-velger i Preview
+- La brukeren velge mellom 3 automatisk genererte fargepaletter uten å regenerere hele siden
+- Implementeres ved å bytte CSS custom property-verdiene dynamisk
+
+### 18. Mobilvisning Toggle
+- Legg til "Desktop / Tablet / Mobile"-knapper i preview-baren
+- Resize iframe width for å simulere de ulike visningene
+
+---
+
+## 📦 Output-format
+
+### 19. Last ned som ZIP
+- Tilbud om å laste ned som en komplett `.zip`-fil med:
+  - `index.html`
+  - `assets/logo.png`, `assets/hero.jpg`
+  - [README.md](file:///c:/ai-agency-os/README.md) med instruksjoner for hosting
+
+### 20. Hosting med ett klikk
+- Integrasjon med [Vercel](https://vercel.com/) eller [Netlify] API
+- Brukeren får en live URL på sekunder etter å ha godkjent nettsiden
+
+---
+
+## Prioritert rekkefølge (quick wins → biggest impact)
+
+| # | Feature | Vanskelighetsgrad | Impact |
+|---|---------|-------------------|--------|
+| 1 | JSON-LD SEO markup | 🟢 Lett | ⭐⭐⭐⭐ |
+| 2 | Mobil-toggle i preview | 🟢 Lett | ⭐⭐⭐⭐ |
+| 3 | Bransje-spesifikke seksjoner | 🟡 Middels | ⭐⭐⭐⭐⭐ |
+| 4 | Live streaming av HTML | 🟡 Middels | ⭐⭐⭐⭐⭐ |
+| 5 | AI-generert logo (Imagen/Gemini) | 🔴 Krevende | ⭐⭐⭐⭐⭐ |
+| 6 | Seksjon-for-seksjon regenerering | 🔴 Krevende | ⭐⭐⭐⭐⭐ |
+| 7 | Last ned som ZIP | 🟡 Middels | ⭐⭐⭐⭐ |
