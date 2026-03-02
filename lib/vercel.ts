@@ -1,8 +1,8 @@
 const VERCEL_API = "https://api.vercel.com";
 
 function getHeaders(): Record<string, string> {
-  const token = process.env.VERCEL_TOKEN;
-  if (!token) throw new Error("VERCEL_TOKEN is not configured");
+  const token = process.env.DEPLOY_VERCEL_TOKEN;
+  if (!token) throw new Error("DEPLOY_VERCEL_TOKEN is not configured");
   return {
     Authorization: `Bearer ${token}`,
     "Content-Type": "application/json",
@@ -10,7 +10,7 @@ function getHeaders(): Record<string, string> {
 }
 
 function teamParam(): string {
-  const teamId = process.env.VERCEL_TEAM_ID;
+  const teamId = process.env.DEPLOY_TEAM_ID;
   return teamId ? `?teamId=${teamId}` : "";
 }
 
