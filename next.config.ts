@@ -12,6 +12,14 @@ const nextConfig: NextConfig = {
     "@google/genai",
     "@google/generative-ai",
   ],
+  outputFileTracingExcludes: {
+    "*": [
+      "./node_modules/.prisma/client/libquery_engine*",
+      "./node_modules/prisma/libquery_engine*",
+      "./node_modules/@prisma/engines/**",
+      "./node_modules/prisma/node_modules/**",
+    ],
+  },
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "lh3.googleusercontent.com" },
