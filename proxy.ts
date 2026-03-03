@@ -5,7 +5,7 @@ export default auth((req) => {
   const { pathname } = req.nextUrl;
 
   const isAuthPage = pathname.startsWith("/login") || pathname.startsWith("/register");
-  const isProtected = pathname.startsWith("/builder");
+  const isProtected = pathname.startsWith("/builder") || pathname.startsWith("/settings");
 
   if (isProtected && !isLoggedIn) {
     return Response.redirect(new URL("/login", req.url));
@@ -19,5 +19,5 @@ export default auth((req) => {
 });
 
 export const config = {
-  matcher: ["/login", "/register", "/builder/:path*"],
+  matcher: ["/login", "/register", "/builder/:path*", "/settings"],
 };

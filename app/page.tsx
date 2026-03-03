@@ -330,12 +330,20 @@ export default function LandingPage() {
         </Link>
         <LanguageSwitcher />
         {session?.user ? (
-          <img
-            src={session.user.image ?? undefined}
-            alt={session.user.name ?? "Profile"}
-            referrerPolicy="no-referrer"
-            className="h-9 w-9 rounded-full object-cover ring-2 ring-zinc-200 transition-all hover:ring-violet-400 cursor-pointer"
-          />
+          <Link href="/settings">
+            {session.user.image ? (
+              <img
+                src={session.user.image}
+                alt={session.user.name ?? "Profil"}
+                referrerPolicy="no-referrer"
+                className="h-9 w-9 rounded-full object-cover ring-2 ring-zinc-200 transition-all hover:ring-violet-400"
+              />
+            ) : (
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-zinc-900 text-xs font-semibold text-white ring-2 ring-zinc-200 transition-all hover:ring-violet-400">
+                {(session.user.name?.[0] ?? session.user.email?.[0] ?? "?").toUpperCase()}
+              </div>
+            )}
+          </Link>
         ) : (
           <Link
             href="/login"
