@@ -39,6 +39,19 @@ enum DeploymentStatus {
   FAILED
 }
 
+enum SubscriptionTier {
+  FREE
+  STARTER
+  PRO
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  PAST_DUE
+  INACTIVE
+}
+
 enum DomainStatus {
   CHECKING
   AVAILABLE
@@ -60,6 +73,11 @@ model User {
   emailVerified  DateTime?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
+
+  subscriptionTier     SubscriptionTier     @default(FREE)
+  subscriptionStatus   SubscriptionStatus   @default(INACTIVE)
+  stripeCustomerId     String?              @unique
+  stripeSubscriptionId String?              @unique
 
   projects  Project[]
   prospects Prospect[]

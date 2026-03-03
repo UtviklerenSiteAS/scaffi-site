@@ -208,6 +208,11 @@ export default function LandingPage() {
     const q = query.trim();
     if (!q) return;
 
+    if (!session?.user) {
+      router.push("/login");
+      return;
+    }
+
     if (!isLoadMore) {
       setIsModalOpen(true);
       setLoading(true);
@@ -246,6 +251,10 @@ export default function LandingPage() {
 
   async function handleSaveProspect(prospect: Prospect) {
     if (!session?.user) return;
+    if (session.user.subscriptionTier === "FREE") {
+      router.push("/pricing");
+      return;
+    }
     setSavingProspect(prospect.placeId);
     try {
       const res = await fetch("/api/prospects", {
@@ -272,6 +281,10 @@ export default function LandingPage() {
   }
 
   function handlePitch(prospect: Prospect) {
+    if (session?.user?.subscriptionTier === "FREE") {
+      router.push("/pricing");
+      return;
+    }
     setIsRedirecting(true);
     const params = new URLSearchParams({
       placeId: prospect.placeId,
@@ -360,6 +373,12 @@ export default function LandingPage() {
     <div className="min-h-screen bg-[#FAFAFA] text-zinc-900 selection:bg-violet-200">
       {/* ── Profile / Sign in (top-right) ── */}
       <div className="fixed right-6 top-6 z-40 flex items-center gap-3">
+        <Link
+          href="/pricing"
+          className="rounded-full border border-zinc-200 bg-white px-4 py-1.5 text-xs font-medium text-zinc-700 transition-all hover:bg-zinc-50 active:scale-[0.97]"
+        >
+          Priser
+        </Link>
         <LanguageSwitcher />
         {session?.user ? (
           <img

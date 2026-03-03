@@ -6,6 +6,12 @@ const PLACES_BASE = "https://places.googleapis.com/v1/places:searchText";
 
 export async function POST(req: Request) {
     const session = await auth();
+    if (!session?.user) {
+        return NextResponse.json(
+            { error: "Authentication required", code: "UNAUTHORIZED" },
+            { status: 401 }
+        );
+    }
 
     const { query, pageToken } = await req.json();
     if (!query?.trim()) {

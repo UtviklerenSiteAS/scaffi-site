@@ -2,6 +2,9 @@ import { generateWebsiteSchema } from "@/lib/validations/website";
 import { getPlaceDetails, type PlaceDetails } from "@/lib/maps";
 import { anthropic } from "@/lib/claude";
 import { generateLogo, generateHeroImage, generateHtmlFromReferences, streamGeminiHtml } from "@/lib/gemini";
+import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { checkWebsiteLimit, isPaidTier } from "@/lib/subscription";
 
 // ─── Style Instructions ───────────────────────────────────────────────────────
 const STYLE_INSTRUCTIONS: Record<string, string> = {
@@ -515,6 +518,34 @@ ${jsonLd}
 
 // ─── Streaming POST Handler ───────────────────────────────────────────────────
 export async function POST(req: Request) {
+  const session = await auth();
+  if (!session?.user) {
+    return new Response(
+      JSON.stringify({ error: "Authentication required", code: "UNAUTHORIZED" }),
+      { status: 401, headers: { "Content-Type": "application/json" } }
+    );
+  }
+
+  const dbUser = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { subscriptionTier: true },
+  });
+
+  if (!dbUser || !isPaidTier(dbUser.subscriptionTier)) {
+    return new Response(
+      JSON.stringify({ error: "Subscription required to generate websites", code: "SUBSCRIPTION_REQUIRED" }),
+      { status: 403, headers: { "Content-Type": "application/json" } }
+    );
+  }
+
+  const canGenerate = await checkWebsiteLimit(session.user.id, dbUser.subscriptionTier);
+  if (!canGenerate) {
+    return new Response(
+      JSON.stringify({ error: "Website limit reached. Upgrade to Pro for unlimited websites.", code: "LIMIT_EXCEEDED" }),
+      { status: 403, headers: { "Content-Type": "application/json" } }
+    );
+  }
+
   const body = await req.json();
   const parsed = generateWebsiteSchema.safeParse(body);
 

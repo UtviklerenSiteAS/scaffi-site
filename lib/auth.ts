@@ -63,20 +63,39 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
       return true;
     },
-    async jwt({ token, user, account }) {
+    async jwt({ token, user, account, trigger }) {
       if (user && account?.provider === "google" && user.email) {
         const dbUser = await prisma.user.findUnique({
           where: { email: user.email },
+          select: { id: true, subscriptionTier: true },
         });
-        if (dbUser) token.id = dbUser.id;
+        if (dbUser) {
+          token.id = dbUser.id;
+          token.subscriptionTier = dbUser.subscriptionTier;
+        }
       } else if (user) {
         token.id = user.id;
+        const dbUser = await prisma.user.findUnique({
+          where: { id: user.id as string },
+          select: { subscriptionTier: true },
+        });
+        token.subscriptionTier = dbUser?.subscriptionTier ?? "FREE";
       }
+
+      if (trigger === "update" && token.id) {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.id as string },
+          select: { subscriptionTier: true },
+        });
+        token.subscriptionTier = dbUser?.subscriptionTier ?? "FREE";
+      }
+
       return token;
     },
     session({ session, token }) {
       if (session.user && token.id) {
         session.user.id = token.id as string;
+        session.user.subscriptionTier = (token.subscriptionTier as string) ?? "FREE";
       }
       return session;
     },
