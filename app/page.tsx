@@ -11,17 +11,15 @@ import { motion, AnimatePresence } from "motion/react";
 import {
   Archive,
   ArrowRight,
-  Bookmark,
   Building2,
+  Check,
   Clock,
   ExternalLink,
-  FolderOpen,
   Globe,
   Loader2,
   MapPin,
   MoreHorizontal,
   Phone,
-  PhoneCall,
   RotateCcw,
   Search,
   Star,
@@ -70,15 +68,14 @@ type SavedProspect = {
   websites: { id: string }[];
 };
 
-type DashboardTab = "websites" | "leads" | "active" | "archived";
+type DashboardTab = "calls" | "websites" | "archived";
 
 // ─── Sidebar tabs config ────────────────────────────────────────────────────
 
-const SIDEBAR_TAB_IDS: { id: DashboardTab; icon: typeof Globe; labelKey: string }[] = [
-  { id: "websites", icon: Globe, labelKey: "home.sidebar.previousProjects" },
-  { id: "leads", icon: Bookmark, labelKey: "home.sidebar.savedProspects" },
-  { id: "active", icon: PhoneCall, labelKey: "home.sidebar.activeProjects" },
-  { id: "archived", icon: Archive, labelKey: "home.sidebar.archivedProjects" },
+const SIDEBAR_TABS: { id: DashboardTab; icon: typeof Globe; label: string }[] = [
+  { id: "calls", icon: Phone, label: "Samtaler" },
+  { id: "websites", icon: Globe, label: "Nettsider" },
+  { id: "archived", icon: Archive, label: "Arkiv" },
 ];
 
 // ─── Page ───────────────────────────────────────────────────────────────────
@@ -98,21 +95,16 @@ export default function LandingPage() {
 
   const confettiRef = useRef<ConfettiRef>(null);
 
-  // Track which prospects have been saved
   const [savingProspect, setSavingProspect] = useState<string | null>(null);
   const [savedProspectIds, setSavedProspectIds] = useState<Set<string>>(new Set());
 
-  // Dashboard tab state
-  const [activeTab, setActiveTab] = useState<DashboardTab>("websites");
+  const [activeTab, setActiveTab] = useState<DashboardTab>("calls");
 
-  // Saved websites state
   const [savedWebsites, setSavedWebsites] = useState<SavedWebsite[]>([]);
   const [archivedWebsites, setArchivedWebsites] = useState<SavedWebsite[]>([]);
   const [loadingSaved, setLoadingSaved] = useState(false);
 
-  // Prospects state
-  const [leadProspects, setLeadProspects] = useState<SavedProspect[]>([]);
-  const [activeProspects, setActiveProspects] = useState<SavedProspect[]>([]);
+  const [allProspects, setAllProspects] = useState<SavedProspect[]>([]);
   const [loadingProspects, setLoadingProspects] = useState(false);
 
   // ─── Data fetching ────────────────────────────────────────────────────────
@@ -125,14 +117,8 @@ export default function LandingPage() {
         fetch("/api/websites"),
         fetch("/api/websites?status=ARCHIVED"),
       ]);
-      if (activeRes.ok) {
-        const data = await activeRes.json();
-        setSavedWebsites(data.websites);
-      }
-      if (archivedRes.ok) {
-        const data = await archivedRes.json();
-        setArchivedWebsites(data.websites);
-      }
+      if (activeRes.ok) setSavedWebsites((await activeRes.json()).websites);
+      if (archivedRes.ok) setArchivedWebsites((await archivedRes.json()).websites);
     } catch {
       console.error("Failed to fetch saved websites");
     } finally {
@@ -144,18 +130,13 @@ export default function LandingPage() {
     if (!session?.user) return;
     setLoadingProspects(true);
     try {
-      const [leadRes, activeRes] = await Promise.all([
+      const [leadRes, qualifiedRes] = await Promise.all([
         fetch("/api/prospects?status=LEAD"),
         fetch("/api/prospects?status=QUALIFIED"),
       ]);
-      if (leadRes.ok) {
-        const data = await leadRes.json();
-        setLeadProspects(data.prospects);
-      }
-      if (activeRes.ok) {
-        const data = await activeRes.json();
-        setActiveProspects(data.prospects);
-      }
+      const leads: SavedProspect[] = leadRes.ok ? (await leadRes.json()).prospects : [];
+      const qualified: SavedProspect[] = qualifiedRes.ok ? (await qualifiedRes.json()).prospects : [];
+      setAllProspects([...leads, ...qualified]);
     } catch {
       console.error("Failed to fetch prospects");
     } finally {
@@ -168,19 +149,15 @@ export default function LandingPage() {
     fetchProspects();
   }, [fetchSavedWebsites, fetchProspects]);
 
-  // Sync saved prospect IDs from both lead and active prospects
   useEffect(() => {
     const ids = new Set<string>();
-    for (const p of leadProspects) {
-      if (p.placeId) ids.add(p.placeId);
-    }
-    for (const p of activeProspects) {
+    for (const p of allProspects) {
       if (p.placeId) ids.add(p.placeId);
     }
     setSavedProspectIds(ids);
-  }, [leadProspects, activeProspects]);
+  }, [allProspects]);
 
-  const hasNoWebsiteProspects = !loading && !error && prospects.length > 0 && prospects.some((p) => !p.website);
+  const hasNoWebsiteProspects = !loading && !error && prospects.length > 0;
 
   useEffect(() => {
     if (hasNoWebsiteProspects) {
@@ -192,18 +169,15 @@ export default function LandingPage() {
     }
   }, [hasNoWebsiteProspects]);
 
-  // ─── Counts for sidebar badges ────────────────────────────────────────────
-
   const tabCounts: Record<DashboardTab, number> = {
+    calls: allProspects.length,
     websites: savedWebsites.length,
-    leads: leadProspects.length,
-    active: activeProspects.length,
     archived: archivedWebsites.length,
   };
 
   // ─── Handlers ─────────────────────────────────────────────────────────────
 
-  async function handleGenerate(e?: React.FormEvent, isLoadMore = false) {
+  async function handleSearch(e?: { preventDefault(): void }, isLoadMore = false) {
     if (e) e.preventDefault();
     const q = query.trim();
     if (!q) return;
@@ -230,7 +204,6 @@ export default function LandingPage() {
         body: JSON.stringify({ query: q, pageToken: isLoadMore ? nextPageToken : undefined }),
       });
       const data = await res.json();
-
       if (!res.ok) {
         setError(data.error ?? "Something went wrong");
       } else {
@@ -249,12 +222,8 @@ export default function LandingPage() {
     }
   }
 
-  async function handleSaveProspect(prospect: Prospect) {
-    if (!session?.user) return;
-    if (session.user.subscriptionTier === "FREE") {
-      router.push("/pricing");
-      return;
-    }
+  async function saveProspect(prospect: Prospect) {
+    if (!session?.user || savedProspectIds.has(prospect.placeId)) return;
     setSavingProspect(prospect.placeId);
     try {
       const res = await fetch("/api/prospects", {
@@ -280,23 +249,24 @@ export default function LandingPage() {
     }
   }
 
-  function handlePitch(prospect: Prospect) {
-    if (session?.user?.subscriptionTier === "FREE") {
-      router.push("/pricing");
-      return;
+  // Ring-knapp: lagrer prospektet automatisk og åpner telefonen
+  async function handleRing(prospect: Prospect) {
+    if (!session?.user) { router.push("/login"); return; }
+    if (session.user.subscriptionTier === "FREE") { router.push("/pricing"); return; }
+    await saveProspect(prospect);
+    if (prospect.phone) {
+      window.location.href = `tel:${prospect.phone.replace(/\s/g, "")}`;
     }
+  }
+
+  function handlePitch(prospect: Prospect) {
+    if (session?.user?.subscriptionTier === "FREE") { router.push("/pricing"); return; }
     setIsRedirecting(true);
-    const params = new URLSearchParams({
-      placeId: prospect.placeId,
-      name: prospect.name,
-    });
+    const params = new URLSearchParams({ placeId: prospect.placeId, name: prospect.name });
     if (prospect.phone) params.set("phone", prospect.phone);
     if (prospect.address) params.set("address", prospect.address);
     if (prospect.rating) params.set("rating", prospect.rating.toString());
-
-    setTimeout(() => {
-      router.push(`/builder?${params.toString()}`);
-    }, 1000);
+    setTimeout(() => router.push(`/builder?${params.toString()}`), 1000);
   }
 
   function handleOpenSavedWebsite(website: SavedWebsite) {
@@ -307,23 +277,17 @@ export default function LandingPage() {
     if (website.businessAddress) params.set("address", website.businessAddress);
     if (website.businessRating) params.set("rating", website.businessRating.toString());
     if (website.businessCategory) params.set("category", website.businessCategory);
-
-    setTimeout(() => {
-      router.push(`/builder?${params.toString()}`);
-    }, 800);
+    setTimeout(() => router.push(`/builder?${params.toString()}`), 800);
   }
 
-  function navigateToBuilder(prospect: SavedProspect) {
+  function handleOpenProspectWebsite(prospect: SavedProspect) {
     setIsRedirecting(true);
     const params = new URLSearchParams({ name: prospect.name });
     if (prospect.placeId) params.set("placeId", prospect.placeId);
     if (prospect.phone) params.set("phone", prospect.phone);
     if (prospect.address) params.set("address", prospect.address);
     if (prospect.rating) params.set("rating", prospect.rating.toString());
-
-    setTimeout(() => {
-      router.push(`/builder?${params.toString()}`);
-    }, 800);
+    setTimeout(() => router.push(`/builder?${params.toString()}`), 800);
   }
 
   async function updateProspectStatus(id: string, status: string) {
@@ -333,9 +297,7 @@ export default function LandingPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),
       });
-      if (res.ok) {
-        await fetchProspects();
-      }
+      if (res.ok) await fetchProspects();
     } catch {
       console.error("Failed to update prospect status");
     }
@@ -348,30 +310,17 @@ export default function LandingPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),
       });
-      if (res.ok) {
-        await fetchSavedWebsites();
-      }
+      if (res.ok) await fetchSavedWebsites();
     } catch {
       console.error("Failed to update website status");
     }
   }
 
-  // ─── Show dashboard only if logged in ─────────────────────────────────────
-
-  const showDashboard = session?.user && (
-    savedWebsites.length > 0 ||
-    archivedWebsites.length > 0 ||
-    leadProspects.length > 0 ||
-    activeProspects.length > 0 ||
-    loadingSaved ||
-    loadingProspects
-  );
-
   // ─── Render ───────────────────────────────────────────────────────────────
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] text-zinc-900 selection:bg-violet-200">
-      {/* ── Profile / Sign in (top-right) ── */}
+      {/* ── Top-right nav ── */}
       <div className="fixed right-6 top-6 z-40 flex items-center gap-3">
         <Link
           href="/pricing"
@@ -429,7 +378,7 @@ export default function LandingPage() {
             transition={{ duration: 0.6, delay: 0.3 }}
             className="mt-10 w-full max-w-xl"
           >
-            <form onSubmit={(e) => handleGenerate(e)} className="group relative">
+            <form onSubmit={(e) => handleSearch(e)} className="group relative">
               <div className="relative flex items-center rounded-2xl bg-white shadow-[0_2px_20px_rgba(0,0,0,0.06)] ring-1 ring-zinc-200/80 transition-all focus-within:shadow-[0_4px_30px_rgba(124,58,237,0.1)] focus-within:ring-violet-300/50">
                 <BorderBeam size={140} duration={8} className="opacity-0 transition-opacity group-focus-within:opacity-100" />
                 <div className="pl-5">
@@ -461,14 +410,14 @@ export default function LandingPage() {
                 {(["restaurant", "hairdresser", "dentist", "plumber", "electrician", "gym", "cafe"] as const).map((key) => {
                   const filter = t(`home.filters.${key}`);
                   return (
-                  <button
-                    key={filter}
-                    type="button"
-                    onClick={() => setQuery(filter)}
-                    className="shrink-0 rounded-full border border-zinc-200 bg-white px-4 py-1.5 text-xs font-medium text-zinc-500 transition-all hover:border-zinc-300 hover:bg-zinc-50 hover:text-zinc-900"
-                  >
-                    {filter}
-                  </button>
+                    <button
+                      key={filter}
+                      type="button"
+                      onClick={() => setQuery(filter)}
+                      className="shrink-0 rounded-full border border-zinc-200 bg-white px-4 py-1.5 text-xs font-medium text-zinc-500 transition-all hover:border-zinc-300 hover:bg-zinc-50 hover:text-zinc-900"
+                    >
+                      {filter}
+                    </button>
                   );
                 })}
               </div>
@@ -477,14 +426,14 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── Dashboard with Sidebar ── */}
-      {showDashboard && (
+      {/* ── Dashboard ── */}
+      {session?.user && (
         <section className="mx-auto w-full max-w-6xl px-6 py-12">
           <div className="flex gap-8">
             {/* Sidebar */}
-            <nav className="w-56 shrink-0">
+            <nav className="w-52 shrink-0">
               <div className="sticky top-24 space-y-1">
-                {SIDEBAR_TAB_IDS.map((tab) => {
+                {SIDEBAR_TABS.map((tab) => {
                   const Icon = tab.icon;
                   const isActive = activeTab === tab.id;
                   const count = tabCounts[tab.id];
@@ -499,15 +448,9 @@ export default function LandingPage() {
                       }`}
                     >
                       <Icon className="h-4 w-4 shrink-0" />
-                      <span className="flex-1 truncate">{t(tab.labelKey)}</span>
+                      <span className="flex-1 truncate">{tab.label}</span>
                       {count > 0 && (
-                        <span
-                          className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-                            isActive
-                              ? "bg-white/20 text-white"
-                              : "bg-zinc-100 text-zinc-500"
-                          }`}
-                        >
+                        <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${isActive ? "bg-white/20 text-white" : "bg-zinc-100 text-zinc-500"}`}>
                           {count}
                         </span>
                       )}
@@ -517,33 +460,74 @@ export default function LandingPage() {
               </div>
             </nav>
 
-            {/* Content area */}
+            {/* Content */}
             <div className="min-w-0 flex-1">
-              {/* Tab header */}
-              <div className="mb-6 flex items-center gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-100">
-                  <FolderOpen className="h-4 w-4 text-zinc-600" />
-                </div>
-                <h2 className="text-lg font-semibold tracking-tight text-zinc-900">
-                  {t(SIDEBAR_TAB_IDS.find((tab) => tab.id === activeTab)?.labelKey ?? "")}
-                </h2>
-                <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-500">
-                  {tabCounts[activeTab]}
-                </span>
-              </div>
+              {/* ── Samtaler-tab ── */}
+              {activeTab === "calls" && (
+                <>
+                  <div className="mb-6 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <h2 className="text-lg font-semibold tracking-tight text-zinc-900">Samtaler</h2>
+                      <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-500">
+                        {allProspects.length}
+                      </span>
+                    </div>
+                    <p className="text-xs text-zinc-400">Ring, generer nettside og lukk salget</p>
+                  </div>
 
-              {/* Loading state */}
-              {(loadingSaved || loadingProspects) && (
-                <div className="flex items-center justify-center py-16">
-                  <Loader2 className="h-6 w-6 animate-spin text-zinc-400" />
-                </div>
+                  {loadingProspects ? (
+                    <div className="flex items-center justify-center py-16">
+                      <Loader2 className="h-6 w-6 animate-spin text-zinc-400" />
+                    </div>
+                  ) : allProspects.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-200 bg-white py-20">
+                      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-zinc-50 ring-1 ring-zinc-200">
+                        <Phone className="h-6 w-6 text-zinc-300" strokeWidth={1.5} />
+                      </div>
+                      <p className="mt-4 text-sm font-medium text-zinc-600">Ingen kontakter ennå</p>
+                      <p className="mt-1 text-xs text-zinc-400">Søk etter bedrifter og trykk "Ring" for å legge dem til</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                      {/* Not called first */}
+                      {[...allProspects]
+                        .sort((a, b) => (a.status === "LEAD" ? -1 : 1) || a.name.localeCompare(b.name))
+                        .map((prospect) => (
+                          <CallCard
+                            key={prospect.id}
+                            prospect={prospect}
+                            onPitch={() => handleOpenProspectWebsite(prospect)}
+                            onMarkContacted={() => updateProspectStatus(prospect.id, "QUALIFIED")}
+                            onMarkLead={() => updateProspectStatus(prospect.id, "LEAD")}
+                          />
+                        ))}
+                    </div>
+                  )}
+                </>
               )}
 
-              {/* ── Websites tab ── */}
-              {!loadingSaved && activeTab === "websites" && (
+              {/* ── Nettsider-tab ── */}
+              {activeTab === "websites" && (
                 <>
-                  {savedWebsites.length === 0 ? (
-                    <EmptyState message={t("home.emptyStates.noWebsites")} sub={t("home.emptyStates.noWebsitesSub")} />
+                  <div className="mb-6 flex items-center gap-3">
+                    <h2 className="text-lg font-semibold tracking-tight text-zinc-900">Nettsider</h2>
+                    <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-500">
+                      {savedWebsites.length}
+                    </span>
+                  </div>
+
+                  {loadingSaved ? (
+                    <div className="flex items-center justify-center py-16">
+                      <Loader2 className="h-6 w-6 animate-spin text-zinc-400" />
+                    </div>
+                  ) : savedWebsites.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-200 bg-white py-20">
+                      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-zinc-50 ring-1 ring-zinc-200">
+                        <Globe className="h-6 w-6 text-zinc-300" strokeWidth={1.5} />
+                      </div>
+                      <p className="mt-4 text-sm font-medium text-zinc-600">{t("home.emptyStates.noWebsites")}</p>
+                      <p className="mt-1 text-xs text-zinc-400">{t("home.emptyStates.noWebsitesSub")}</p>
+                    </div>
                   ) : (
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                       {savedWebsites.map((website) => (
@@ -559,53 +543,28 @@ export default function LandingPage() {
                 </>
               )}
 
-              {/* ── Leads tab ── */}
-              {!loadingProspects && activeTab === "leads" && (
+              {/* ── Arkiv-tab ── */}
+              {activeTab === "archived" && (
                 <>
-                  {leadProspects.length === 0 ? (
-                    <EmptyState message={t("home.emptyStates.noProspects")} sub={t("home.emptyStates.noProspectsSub")} />
-                  ) : (
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                      {leadProspects.map((prospect) => (
-                        <ProspectCard
-                          key={prospect.id}
-                          prospect={prospect}
-                          variant="lead"
-                          onGenerate={() => navigateToBuilder(prospect)}
-                          onMarkContacted={() => updateProspectStatus(prospect.id, "QUALIFIED")}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </>
-              )}
+                  <div className="mb-6 flex items-center gap-3">
+                    <h2 className="text-lg font-semibold tracking-tight text-zinc-900">Arkiv</h2>
+                    <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-500">
+                      {archivedWebsites.length}
+                    </span>
+                  </div>
 
-              {/* ── Active/Pågående tab ── */}
-              {!loadingProspects && activeTab === "active" && (
-                <>
-                  {activeProspects.length === 0 ? (
-                    <EmptyState message={t("home.emptyStates.noActive")} sub={t("home.emptyStates.noActiveSub")} />
-                  ) : (
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                      {activeProspects.map((prospect) => (
-                        <ProspectCard
-                          key={prospect.id}
-                          prospect={prospect}
-                          variant="active"
-                          onGenerate={() => navigateToBuilder(prospect)}
-                          onMarkContacted={() => updateProspectStatus(prospect.id, "LEAD")}
-                        />
-                      ))}
+                  {loadingSaved ? (
+                    <div className="flex items-center justify-center py-16">
+                      <Loader2 className="h-6 w-6 animate-spin text-zinc-400" />
                     </div>
-                  )}
-                </>
-              )}
-
-              {/* ── Archived tab ── */}
-              {!loadingSaved && activeTab === "archived" && (
-                <>
-                  {archivedWebsites.length === 0 ? (
-                    <EmptyState message={t("home.emptyStates.noArchived")} sub={t("home.emptyStates.noArchivedSub")} />
+                  ) : archivedWebsites.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-200 bg-white py-20">
+                      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-zinc-50 ring-1 ring-zinc-200">
+                        <Archive className="h-6 w-6 text-zinc-300" strokeWidth={1.5} />
+                      </div>
+                      <p className="mt-4 text-sm font-medium text-zinc-600">{t("home.emptyStates.noArchived")}</p>
+                      <p className="mt-1 text-xs text-zinc-400">{t("home.emptyStates.noArchivedSub")}</p>
+                    </div>
                   ) : (
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                       {archivedWebsites.map((website) => (
@@ -626,7 +585,7 @@ export default function LandingPage() {
         </section>
       )}
 
-      {/* ── Prospects Modal ── */}
+      {/* ── Søkeresultater-modal ── */}
       <AnimatePresence>
         {isModalOpen && (
           <motion.div
@@ -647,6 +606,8 @@ export default function LandingPage() {
                 className="absolute inset-0 z-10 size-full pointer-events-none"
                 manualstart
               />
+
+              {/* Modal header */}
               <div className="flex items-center justify-between border-b border-zinc-100 p-6">
                 <div>
                   <h2 className="text-xl font-semibold tracking-tight text-zinc-900">{t("home.modal.title")}</h2>
@@ -692,85 +653,99 @@ export default function LandingPage() {
                 {!loading && !error && prospects.length > 0 && (
                   <div className="space-y-6">
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                      {prospects.map((p, index) => (
-                        <motion.div
-                          key={`${p.id}-${index}`}
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="group flex flex-col gap-3 rounded-2xl bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)] ring-1 ring-zinc-200/60 transition-all hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)]"
-                        >
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="flex items-center gap-2.5 min-w-0">
-                              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-violet-50">
-                                <Building2 className="h-4 w-4 text-violet-500" strokeWidth={1.5} />
-                              </div>
-                              <p className="font-semibold text-zinc-900 leading-tight line-clamp-2">{p.name}</p>
-                            </div>
-                            {p.rating != null && (
-                              <span className="flex shrink-0 items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-600">
-                                <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                                {p.rating.toFixed(1)}
-                              </span>
-                            )}
-                          </div>
+                      {prospects.map((p, index) => {
+                        const isRinging = savingProspect === p.placeId;
+                        const isSaved = savedProspectIds.has(p.placeId);
 
-                          <div className="space-y-2 mt-1">
-                            {p.address && (
-                              <p className="flex items-start gap-2 text-xs text-zinc-500">
-                                <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-zinc-400" />
-                                <span className="line-clamp-2">{p.address}</span>
-                              </p>
-                            )}
-                            {p.phone && (
-                              <p className="flex items-center gap-2 text-xs text-zinc-500">
-                                <Phone className="h-3.5 w-3.5 shrink-0 text-zinc-400" />
-                                <a href={`tel:${p.phone}`} className="hover:text-zinc-800 transition-colors">{p.phone}</a>
-                              </p>
-                            )}
-                          </div>
-
-                          <div className="mt-auto flex flex-wrap gap-1.5 pt-3">
-                            <div className="flex w-full items-center justify-between">
-                              <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 ring-1 ring-emerald-200/50">
-                                {t("common.noWebsite")}
-                              </span>
-                              <div className="flex items-center gap-1.5">
-                                {session?.user && (
-                                  savedProspectIds.has(p.placeId) ? (
-                                    <span className="flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-600">
-                                      <Bookmark className="h-3 w-3 fill-emerald-500" /> {t("common.saved")}
-                                    </span>
-                                  ) : (
-                                    <button
-                                      onClick={() => handleSaveProspect(p)}
-                                      disabled={savingProspect === p.placeId}
-                                      className="flex items-center gap-1 rounded-full border border-zinc-200 px-2.5 py-1 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-50 disabled:opacity-50"
-                                    >
-                                      {savingProspect === p.placeId ? (
-                                        <Loader2 className="h-3 w-3 animate-spin" />
-                                      ) : (
-                                        <Bookmark className="h-3 w-3" />
-                                      )}
-                                      {t("common.save")}
-                                    </button>
-                                  )
+                        return (
+                          <motion.div
+                            key={`${p.id}-${index}`}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: index * 0.04 }}
+                            className="flex flex-col gap-0 rounded-2xl bg-white ring-1 ring-zinc-200/60 shadow-[0_2px_12px_rgba(0,0,0,0.04)] overflow-hidden transition-all hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)]"
+                          >
+                            {/* Card body */}
+                            <div className="flex flex-col gap-3 p-5">
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="flex items-center gap-2.5 min-w-0">
+                                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-violet-50">
+                                    <Building2 className="h-4 w-4 text-violet-500" strokeWidth={1.5} />
+                                  </div>
+                                  <p className="font-semibold text-zinc-900 leading-tight line-clamp-2">{p.name}</p>
+                                </div>
+                                {p.rating != null && (
+                                  <span className="flex shrink-0 items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-600">
+                                    <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                                    {p.rating.toFixed(1)}
+                                  </span>
                                 )}
-                                <button
-                                  onClick={() => handlePitch(p)}
-                                  className="flex items-center gap-1 rounded-full bg-zinc-900 px-3 py-1 text-xs font-medium text-white transition-colors hover:bg-zinc-800"
-                                >
-                                  {t("common.pitch")} <ArrowRight className="h-3 w-3" />
-                                </button>
+                              </div>
+
+                              <div className="space-y-1.5">
+                                {p.address && (
+                                  <p className="flex items-start gap-2 text-xs text-zinc-500">
+                                    <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-zinc-400" />
+                                    <span className="line-clamp-2">{p.address}</span>
+                                  </p>
+                                )}
+                                {p.phone && (
+                                  <p className="flex items-center gap-2 text-xs font-medium text-zinc-700">
+                                    <Phone className="h-3.5 w-3.5 shrink-0 text-zinc-400" />
+                                    {p.phone}
+                                  </p>
+                                )}
+                              </div>
+
+                              <div className="flex items-center gap-1.5">
+                                <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 ring-1 ring-emerald-200/50">
+                                  Ingen nettside
+                                </span>
+                                {isSaved && (
+                                  <span className="flex items-center gap-1 rounded-full bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-500">
+                                    <Check className="h-3 w-3" /> Lagret
+                                  </span>
+                                )}
                               </div>
                             </div>
-                          </div>
-                        </motion.div>
-                      ))}
+
+                            {/* Action strip */}
+                            <div className="flex border-t border-zinc-100">
+                              <button
+                                onClick={() => handlePitch(p)}
+                                className="flex flex-1 items-center justify-center gap-1.5 px-3 py-3 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-50"
+                              >
+                                Lag nettside <ArrowRight className="h-3 w-3" />
+                              </button>
+                              <div className="w-px bg-zinc-100" />
+                              {p.phone ? (
+                                <button
+                                  onClick={() => handleRing(p)}
+                                  disabled={isRinging}
+                                  className="flex flex-1 items-center justify-center gap-1.5 bg-emerald-500 px-3 py-3 text-xs font-semibold text-white transition-colors hover:bg-emerald-600 disabled:opacity-60"
+                                >
+                                  {isRinging ? (
+                                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                  ) : (
+                                    <Phone className="h-3.5 w-3.5" />
+                                  )}
+                                  Ring
+                                </button>
+                              ) : (
+                                <span className="flex flex-1 items-center justify-center gap-1.5 px-3 py-3 text-xs text-zinc-300">
+                                  Intet nr.
+                                </span>
+                              )}
+                            </div>
+                          </motion.div>
+                        );
+                      })}
                     </div>
+
                     {nextPageToken && (
                       <div className="flex justify-center pb-6">
                         <button
-                          onClick={() => handleGenerate(undefined, true)}
+                          onClick={() => handleSearch(undefined, true)}
                           disabled={loadingMore}
                           className="flex items-center gap-2 rounded-full bg-zinc-100 px-5 py-2.5 text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-200 hover:text-zinc-900 active:scale-[0.97] disabled:opacity-50"
                         >
@@ -787,7 +762,7 @@ export default function LandingPage() {
         )}
       </AnimatePresence>
 
-      {/* ── Redirection Overlay ── */}
+      {/* ── Redirect overlay ── */}
       <AnimatePresence>
         {isRedirecting && (
           <motion.div
@@ -798,9 +773,9 @@ export default function LandingPage() {
           >
             <div className="flex flex-col items-center gap-6">
               <div className="relative">
-                <div className="h-16 w-16 animate-spin rounded-full border-b-2 border-t-2 border-violet-600"></div>
+                <div className="h-16 w-16 animate-spin rounded-full border-b-2 border-t-2 border-violet-600" />
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="h-10 w-10 animate-pulse rounded-full bg-violet-500/20"></div>
+                  <div className="h-10 w-10 animate-pulse rounded-full bg-violet-500/20" />
                 </div>
               </div>
               <div className="space-y-2 text-center">
@@ -812,12 +787,7 @@ export default function LandingPage() {
                 </p>
               </div>
             </div>
-
-            <BorderBeam
-              duration={3}
-              size={600}
-              className="from-transparent via-violet-500/40 to-transparent"
-            />
+            <BorderBeam duration={3} size={600} className="from-transparent via-violet-500/40 to-transparent" />
           </motion.div>
         )}
       </AnimatePresence>
@@ -827,15 +797,91 @@ export default function LandingPage() {
 
 // ─── Sub-components ─────────────────────────────────────────────────────────
 
-function EmptyState({ message, sub }: { message: string; sub: string }) {
+function CallCard({
+  prospect,
+  onPitch,
+  onMarkContacted,
+  onMarkLead,
+}: {
+  prospect: SavedProspect;
+  onPitch: () => void;
+  onMarkContacted: () => void;
+  onMarkLead: () => void;
+}) {
+  const isCalled = prospect.status === "QUALIFIED";
+
   return (
-    <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-200 bg-white py-16">
-      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-zinc-50 ring-1 ring-zinc-200">
-        <FolderOpen className="h-5 w-5 text-zinc-300" strokeWidth={1.5} />
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="flex flex-col overflow-hidden rounded-2xl bg-white ring-1 ring-zinc-200/60 shadow-[0_2px_12px_rgba(0,0,0,0.04)] transition-all hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)]"
+    >
+      {/* Status bar */}
+      <div className={`h-1 w-full ${isCalled ? "bg-emerald-400" : "bg-amber-400"}`} />
+
+      <div className="flex flex-col gap-3 p-4">
+        {/* Name + status */}
+        <div className="flex items-start justify-between gap-2">
+          <p className="font-semibold text-zinc-900 leading-tight line-clamp-2 text-sm">{prospect.name}</p>
+          <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+            isCalled ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"
+          }`}>
+            {isCalled ? "Kontaktet" : "Ikke ringt"}
+          </span>
+        </div>
+
+        {/* Phone — most important */}
+        {prospect.phone ? (
+          <a
+            href={`tel:${prospect.phone.replace(/\s/g, "")}`}
+            onClick={!isCalled ? onMarkContacted : undefined}
+            className="flex items-center gap-2 rounded-xl bg-emerald-500 px-3.5 py-2.5 font-semibold text-white transition-colors hover:bg-emerald-600 active:scale-[0.98]"
+          >
+            <Phone className="h-4 w-4 shrink-0" />
+            <span className="text-sm truncate">{prospect.phone}</span>
+          </a>
+        ) : (
+          <div className="flex items-center gap-2 rounded-xl bg-zinc-100 px-3.5 py-2.5 text-xs text-zinc-400">
+            <Phone className="h-4 w-4" />
+            Intet telefonnummer
+          </div>
+        )}
+
+        {/* Address */}
+        {prospect.address && (
+          <p className="flex items-start gap-1.5 text-xs text-zinc-400 leading-snug">
+            <MapPin className="mt-0.5 h-3 w-3 shrink-0" />
+            <span className="line-clamp-2">{prospect.address}</span>
+          </p>
+        )}
       </div>
-      <p className="mt-4 text-sm font-medium text-zinc-600">{message}</p>
-      <p className="mt-1 text-xs text-zinc-400">{sub}</p>
-    </div>
+
+      {/* Action strip */}
+      <div className="flex border-t border-zinc-100">
+        <button
+          onClick={onPitch}
+          className="flex flex-1 items-center justify-center gap-1.5 px-3 py-2.5 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-50"
+        >
+          Lag nettside <ArrowRight className="h-3 w-3" />
+        </button>
+        <div className="w-px bg-zinc-100" />
+        {isCalled ? (
+          <button
+            onClick={onMarkLead}
+            className="flex flex-1 items-center justify-center gap-1.5 px-3 py-2.5 text-xs font-medium text-zinc-500 transition-colors hover:bg-zinc-50"
+          >
+            <RotateCcw className="h-3 w-3" /> Tilbakestill
+          </button>
+        ) : (
+          <button
+            onClick={onMarkContacted}
+            className="flex flex-1 items-center justify-center gap-1.5 px-3 py-2.5 text-xs font-medium text-emerald-600 transition-colors hover:bg-emerald-50"
+          >
+            <Check className="h-3.5 w-3.5" /> Kontaktet
+          </button>
+        )}
+      </div>
+    </motion.div>
   );
 }
 
@@ -947,101 +993,6 @@ function WebsiteCard({
                   : t("home.status.draft")}
           </span>
         </div>
-      </div>
-    </motion.div>
-  );
-}
-
-function ProspectCard({
-  prospect,
-  variant,
-  onGenerate,
-  onMarkContacted,
-}: {
-  prospect: SavedProspect;
-  variant: "lead" | "active";
-  onGenerate: () => void;
-  onMarkContacted: () => void;
-}) {
-  const t = useTranslations();
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="flex flex-col gap-3 rounded-2xl bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)] ring-1 ring-zinc-200/60 transition-all hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)]"
-    >
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex items-center gap-2.5 min-w-0">
-          <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${
-            variant === "active" ? "bg-emerald-50" : "bg-violet-50"
-          }`}>
-            {variant === "active" ? (
-              <PhoneCall className="h-4 w-4 text-emerald-500" strokeWidth={1.5} />
-            ) : (
-              <Building2 className="h-4 w-4 text-violet-500" strokeWidth={1.5} />
-            )}
-          </div>
-          <p className="font-semibold text-zinc-900 leading-tight line-clamp-2">{prospect.name}</p>
-        </div>
-        {prospect.rating != null && (
-          <span className="flex shrink-0 items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-600">
-            <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-            {prospect.rating.toFixed(1)}
-          </span>
-        )}
-      </div>
-
-      <div className="space-y-2">
-        {prospect.address && (
-          <p className="flex items-start gap-2 text-xs text-zinc-500">
-            <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-zinc-400" />
-            <span className="line-clamp-2">{prospect.address}</span>
-          </p>
-        )}
-        {prospect.phone && (
-          <p className="flex items-center gap-2 text-xs text-zinc-500">
-            <Phone className="h-3.5 w-3.5 shrink-0 text-zinc-400" />
-            <a href={`tel:${prospect.phone}`} className="hover:text-zinc-800 transition-colors">{prospect.phone}</a>
-          </p>
-        )}
-      </div>
-
-      <div className="mt-auto flex items-center justify-between gap-2 pt-3 border-t border-zinc-100">
-        {variant === "lead" ? (
-          <>
-            <button
-              onClick={onMarkContacted}
-              className="flex items-center gap-1 rounded-full border border-zinc-200 px-3 py-1 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-50"
-            >
-              <PhoneCall className="h-3 w-3" /> {t("home.actions.contacted")}
-            </button>
-            {prospect.websites.length === 0 && (
-              <button
-                onClick={onGenerate}
-                className="flex items-center gap-1 rounded-full bg-zinc-900 px-3 py-1 text-xs font-medium text-white transition-colors hover:bg-zinc-800"
-              >
-                {t("home.actions.generateWebsite")} <ArrowRight className="h-3 w-3" />
-              </button>
-            )}
-          </>
-        ) : (
-          <>
-            <button
-              onClick={onMarkContacted}
-              className="flex items-center gap-1 rounded-full border border-zinc-200 px-3 py-1 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-50"
-            >
-              <RotateCcw className="h-3 w-3" /> {t("home.actions.backToLeads")}
-            </button>
-            {prospect.phone && (
-              <a
-                href={`tel:${prospect.phone.replace(/\s/g, "")}`}
-                className="flex items-center gap-1 rounded-full bg-emerald-600 px-3 py-1 text-xs font-medium text-white transition-colors hover:bg-emerald-500"
-              >
-                <Phone className="h-3 w-3" /> {t("home.actions.call")}
-              </a>
-            )}
-          </>
-        )}
       </div>
     </motion.div>
   );

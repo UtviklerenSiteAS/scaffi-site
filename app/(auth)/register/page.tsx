@@ -59,7 +59,7 @@ function RegisterContent() {
       return;
     }
 
-    router.push(nextUrl ?? "/dashboard");
+    router.push(nextUrl ?? "/");
     router.refresh();
   }
 
@@ -76,7 +76,7 @@ function RegisterContent() {
         {/* Google OAuth */}
         <button
           type="button"
-          onClick={() => signIn("google", { callbackUrl: nextUrl ?? "/dashboard" })}
+          onClick={() => signIn("google", { callbackUrl: nextUrl ?? "/" })}
           className="mt-6 flex w-full items-center justify-center gap-3 rounded-xl border-0 bg-zinc-50 px-4 py-2.5 text-sm font-medium text-zinc-700 ring-1 ring-zinc-200 transition-colors hover:bg-zinc-100"
         >
           <svg className="h-4 w-4" viewBox="0 0 24 24">
