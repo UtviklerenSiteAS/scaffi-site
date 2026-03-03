@@ -4,7 +4,7 @@ import { anthropic } from "@/lib/claude";
 import { generateLogo, generateHeroImage, generateHtmlFromReferences, streamGeminiHtml } from "@/lib/gemini";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { checkWebsiteLimit, isPaidTier } from "@/lib/subscription";
+import { checkWebsiteLimit } from "@/lib/subscription";
 
 // ─── Style Instructions ───────────────────────────────────────────────────────
 const STYLE_INSTRUCTIONS: Record<string, string> = {
@@ -531,14 +531,7 @@ export async function POST(req: Request) {
     select: { subscriptionTier: true },
   });
 
-  if (!dbUser || !isPaidTier(dbUser.subscriptionTier)) {
-    return new Response(
-      JSON.stringify({ error: "Subscription required to generate websites", code: "SUBSCRIPTION_REQUIRED" }),
-      { status: 403, headers: { "Content-Type": "application/json" } }
-    );
-  }
-
-  const canGenerate = await checkWebsiteLimit(session.user.id, dbUser.subscriptionTier);
+  const canGenerate = await checkWebsiteLimit(session.user.id, dbUser?.subscriptionTier ?? "FREE");
   if (!canGenerate) {
     return new Response(
       JSON.stringify({ error: "Website limit reached. Upgrade to Pro for unlimited websites.", code: "LIMIT_EXCEEDED" }),

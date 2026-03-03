@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { saveWebsiteSchema } from "@/lib/validations/website";
-import { checkWebsiteLimit, isPaidTier } from "@/lib/subscription";
+import { checkWebsiteLimit } from "@/lib/subscription";
 
 export async function POST(req: Request) {
   const session = await auth();
@@ -18,14 +18,7 @@ export async function POST(req: Request) {
     select: { subscriptionTier: true },
   });
 
-  if (!dbUser || !isPaidTier(dbUser.subscriptionTier)) {
-    return NextResponse.json(
-      { error: "Subscription required to save websites", code: "SUBSCRIPTION_REQUIRED" },
-      { status: 403 }
-    );
-  }
-
-  const canSave = await checkWebsiteLimit(session.user.id, dbUser.subscriptionTier);
+  const canSave = await checkWebsiteLimit(session.user.id, dbUser?.subscriptionTier ?? "FREE");
   if (!canSave) {
     return NextResponse.json(
       { error: "Website limit reached. Upgrade to Pro for unlimited websites.", code: "LIMIT_EXCEEDED" },

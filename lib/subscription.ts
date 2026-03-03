@@ -6,7 +6,7 @@ type TierLimits = {
 };
 
 export const TIER_LIMITS: Record<string, TierLimits> = {
-  FREE: { searchesPerMonth: Infinity, websitesTotal: 0 },
+  FREE: { searchesPerMonth: Infinity, websitesTotal: 1 },
   STARTER: { searchesPerMonth: 50, websitesTotal: 5 },
   PRO: { searchesPerMonth: Infinity, websitesTotal: Infinity },
 };

@@ -260,7 +260,6 @@ export default function LandingPage() {
   }
 
   function handlePitch(prospect: Prospect) {
-    if (session?.user?.subscriptionTier === "FREE") { router.push("/pricing"); return; }
     setIsRedirecting(true);
     const params = new URLSearchParams({ placeId: prospect.placeId, name: prospect.name });
     if (prospect.phone) params.set("phone", prospect.phone);

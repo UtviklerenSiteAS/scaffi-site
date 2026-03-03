@@ -183,6 +183,7 @@ const DESIGN_TEMPLATES: DesignTemplate[] = [
 export default function BuilderPage() {
   const { data: session } = useSession();
   const router = useRouter();
+  const isFree = (session?.user?.subscriptionTier ?? "FREE") === "FREE";
   const searchParams = useSearchParams();
   const t = useTranslations();
 
@@ -1324,6 +1325,20 @@ export default function BuilderPage() {
 
             {/* Right Pane (Preview) */}
             <div className="flex flex-1 flex-col overflow-hidden bg-zinc-950">
+              {/* FREE tier banner */}
+              {isFree && (
+                <div className="flex items-center justify-between bg-violet-600 px-6 py-2">
+                  <p className="text-xs font-medium text-white">
+                    🎁 Gratisforhåndsvisning — Du ser resultatet, men kan ikke redigere, laste ned eller publisere.
+                  </p>
+                  <button
+                    onClick={() => router.push("/pricing")}
+                    className="shrink-0 rounded-full bg-white px-3 py-1 text-xs font-semibold text-violet-700 transition-colors hover:bg-violet-50"
+                  >
+                    Oppgrader →
+                  </button>
+                </div>
+              )}
               {/* Top bar */}
               <div className="flex items-center justify-between border-b border-zinc-800 px-6 py-3">
                 <div className="flex items-center gap-3">
@@ -1360,6 +1375,7 @@ export default function BuilderPage() {
                   {/* Section Edit Toggle */}
                   <button
                     onClick={() => {
+                      if (isFree) { router.push("/pricing"); return; }
                       const next = !sectionEditMode;
                       setSectionEditMode(next);
                       if (next) {
@@ -1370,10 +1386,10 @@ export default function BuilderPage() {
                           .forEach((el) => el.remove());
                       }
                     }}
-                    title={t("builder.preview.editSections")}
-                    className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors ${sectionEditMode ? "border-violet-500 bg-violet-500/20 text-violet-300" : "border-zinc-700 text-zinc-300 hover:bg-zinc-800"}`}
+                    title={isFree ? "Oppgrader for å redigere seksjoner" : t("builder.preview.editSections")}
+                    className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors ${isFree ? "border-zinc-700 text-zinc-600 cursor-pointer" : sectionEditMode ? "border-violet-500 bg-violet-500/20 text-violet-300" : "border-zinc-700 text-zinc-300 hover:bg-zinc-800"}`}
                   >
-                    ✏️
+                    {isFree ? "🔒" : "✏️"}
                   </button>
 
                   {/* Color Palette Picker */}
@@ -1415,11 +1431,11 @@ export default function BuilderPage() {
 
                   {/* Download */}
                   <button
-                    onClick={handleDownloadZip}
-                    title={t("builder.preview.downloadHtml")}
-                    className="flex items-center gap-2 rounded-lg border border-zinc-700 px-3 py-2 text-sm text-zinc-300 transition-colors hover:bg-zinc-800"
+                    onClick={isFree ? () => router.push("/pricing") : handleDownloadZip}
+                    title={isFree ? "Oppgrader for å laste ned" : t("builder.preview.downloadHtml")}
+                    className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors ${isFree ? "border-zinc-700 text-zinc-600 cursor-pointer" : "border-zinc-700 text-zinc-300 hover:bg-zinc-800"}`}
                   >
-                    <Download className="h-4 w-4" />
+                    {isFree ? "🔒" : <Download className="h-4 w-4" />}
                   </button>
 
                   <button
@@ -1446,13 +1462,21 @@ export default function BuilderPage() {
                     </button>
                   )}
 
-                  {/* Deploy button - shown after save */}
-                  {(saveSuccess || websiteId) && generatingFor && (
+                  {/* Deploy button - shown after save, only for paid users */}
+                  {(saveSuccess || websiteId) && generatingFor && !isFree && (
                     <DeployButton
                       websiteId={websiteId ?? ""}
                       currentStatus="NONE"
                       currentUrl={null}
                     />
+                  )}
+                  {(saveSuccess || websiteId) && generatingFor && isFree && (
+                    <button
+                      onClick={() => router.push("/pricing")}
+                      className="flex items-center gap-2 rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-violet-500"
+                    >
+                      🔒 Publiser — Oppgrader
+                    </button>
                   )}
 
                   {(saveSuccess || websiteId) && generatingFor && (
