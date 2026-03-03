@@ -50,6 +50,7 @@ export async function generateLogo(
     const response = await retry(() => client.models.generateContent({
       model: "gemini-3.1-flash-image-preview",
       contents: [{ role: "user", parts: [{ text: prompt }] }],
+      config: { responseModalities: ["IMAGE"] },
     }));
 
     const part = response.candidates?.[0]?.content?.parts?.find((p) => p.inlineData);
@@ -82,6 +83,7 @@ export async function generateHeroImage(
     const response = await retry(() => client.models.generateContent({
       model: "gemini-3.1-flash-image-preview",
       contents: [{ role: "user", parts: [{ text: prompt }] }],
+      config: { responseModalities: ["IMAGE"] },
     }));
 
     const part = response.candidates?.[0]?.content?.parts?.find((p) => p.inlineData);

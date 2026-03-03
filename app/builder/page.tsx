@@ -927,10 +927,7 @@ export default function BuilderPage() {
                     </button>
                   )}
                   <button
-                    onClick={() => {
-                      setShowTemplateModal(false);
-                      if (!generatingFor) router.push("/");
-                    }}
+                    onClick={() => router.push("/")}
                     className="rounded-full bg-zinc-100 p-2 text-zinc-500 transition-colors hover:bg-zinc-200 hover:text-zinc-900"
                   >
                     <X className="h-5 w-5" strokeWidth={1.5} />

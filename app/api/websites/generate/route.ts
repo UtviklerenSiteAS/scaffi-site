@@ -531,7 +531,7 @@ export async function POST(req: Request) {
     select: { subscriptionTier: true },
   });
 
-  const canGenerate = await checkWebsiteLimit(session.user.id, dbUser?.subscriptionTier ?? "FREE");
+  const canGenerate = await checkWebsiteLimit(session.user.id, dbUser?.subscriptionTier ?? "FREE", session.user.email);
   if (!canGenerate) {
     return new Response(
       JSON.stringify({ error: "Website limit reached. Upgrade to Pro for unlimited websites.", code: "LIMIT_EXCEEDED" }),
